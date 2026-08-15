@@ -3,13 +3,16 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
+import Signup from './COMPONENTS/Signup'
+// import Signup from './COMPONENTS/Signup'
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
     <>
-      <section id="center">
+    <Signup />
+      {/* <section id="center">
         <div className="hero">
           <img src={heroImg} className="base" width="170" height="179" alt="" />
           <img src={reactLogo} className="framework" alt="React logo" />
@@ -28,19 +31,14 @@ function App() {
         >
           Count is {count}
         </button>
-      </section>
+      </section> */}
 
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <h1 className="text-5xl font-bold text-blue-500">
-          Tailwind CSS is Working! 🚀
-        </h1>
-      </div>
+      
+
+      {/* <div className="ticks"></div> */}
 
 
-      <div className="ticks"></div>
-
-
-      <section id="next-steps">
+      {/* <section id="next-steps">
         <div id="docs">
           <svg className="icon" role="presentation" aria-hidden="true">
             <use href="/icons.svg#documentation-icon"></use>
@@ -119,10 +117,10 @@ function App() {
             </li>
           </ul>
         </div>
-      </section>
+      </section> */}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+      {/* <div className="ticks"></div>
+      <section id="spacer"></section> */}
     </>
   )
 }
