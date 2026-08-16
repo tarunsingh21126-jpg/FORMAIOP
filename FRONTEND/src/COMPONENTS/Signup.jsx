@@ -55,7 +55,7 @@ export default function Signup() {
             <div className="bg-indigo-600 p-2 rounded-lg">
               <LayoutDashboard size={24} className="text-white" />
             </div>
-            <span className="text-[#111827] font-bold text-2xl tracking-wide">SyncSpace</span>
+            <span className="text-[#111827] font-bold text-2xl tracking-wide">FORMAIOP</span>
           </div>
 
           <h2 className="mt-4 text-center text-2xl font-bold tracking-tight text-gray-900">
