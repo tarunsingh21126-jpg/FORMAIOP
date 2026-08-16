@@ -12,7 +12,7 @@ function App() {
   return (
     <>
     <Signup />
-      {/* <section id="center">
+       <section id="center">
         <div className="hero">
           <img src={heroImg} className="base" width="170" height="179" alt="" />
           <img src={reactLogo} className="framework" alt="React logo" />
@@ -31,7 +31,7 @@ function App() {
         >
           Count is {count}
         </button>
-      </section> */}
+      </section> 
 
       
 
