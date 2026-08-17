@@ -1,0 +1,160 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+  height: fit-content;
+}
+
+.card-header {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 1rem;
+}
+
+.status-message {
+  color: var(--color-muted);
+}
+
+.status-message--error {
+  color: var(--color-error);
+}
+
+.status-message--error .hint {
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+.dynamic-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.form-field label {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.form-field input[type='text'],
+.form-field input[type='email'],
+.form-field input[type='number'],
+.form-field select,
+.form-field textarea {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--color-text);
+  background: #fff;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.form-field textarea {
+  resize: vertical;
+}
+
+.form-field--checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.form-field--checkbox input {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.form-field--unsupported {
+  color: var(--color-error);
+  font-size: 0.9rem;
+  border: 1px dashed var(--color-error);
+  border-radius: 6px;
+  padding: 0.5rem;
+}
+
+.field-error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: 0.85rem;
+}
+
+.dynamic-form button[type='submit'] {
+  align-self: flex-start;
+  margin-top: 0.5rem;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  padding: 0.65rem 1.4rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dynamic-form button[type='submit']:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.dynamic-form button[type='submit']:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.submission-summary dl {
+  margin: 0 0 1.25rem;
+}
+
+.summary-row {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.summary-row dt {
+  flex: 0 0 45%;
+  font-weight: 600;
+  color: var(--color-muted);
+  font-size: 0.88rem;
+}
+
+.summary-row dd {
+  margin: 0;
+  flex: 1;
+  word-break: break-word;
+}
+
+.submission-summary button {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
