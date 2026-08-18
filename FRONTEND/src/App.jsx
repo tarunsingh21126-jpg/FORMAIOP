@@ -16,21 +16,25 @@ function App() {
     type: "text",
     name: "fullName",
     label: "Full Name",
+    required: true,
   },
   {
     type: "textarea",
     name: "message",
     label: "Message",
+    required: true,
   },
   {
     type: "number",
     name: "age",
     label: "Age",
+    required: true,
   },
   {
     type: "date",
     name: "birthDate",
     label: "Birth Date",
+    required: true,
   },
 ];
 

@@ -4,6 +4,7 @@ function DynamicForm({ schema }) {
   const {
     register,
     handleSubmit,
+    formState: { errors },
   } = useForm();
 
   const onSubmit = (data) => {
@@ -14,15 +15,26 @@ function DynamicForm({ schema }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       {schema.map((field) => {
+        const validationRules = {
+          required: field.required
+            ? `${field.label} is required`
+            : false,
+        };
+
         switch (field.type) {
           case "text":
             return (
               <div key={field.name}>
                 <label>{field.label}</label>
+
                 <input
                   type="text"
-                  {...register(field.name)}
+                  {...register(field.name, validationRules)}
                 />
+
+                {errors[field.name] && (
+                  <p>{errors[field.name].message}</p>
+                )}
               </div>
             );
 
@@ -30,9 +42,14 @@ function DynamicForm({ schema }) {
             return (
               <div key={field.name}>
                 <label>{field.label}</label>
+
                 <textarea
-                  {...register(field.name)}
+                  {...register(field.name, validationRules)}
                 />
+
+                {errors[field.name] && (
+                  <p>{errors[field.name].message}</p>
+                )}
               </div>
             );
 
@@ -40,10 +57,15 @@ function DynamicForm({ schema }) {
             return (
               <div key={field.name}>
                 <label>{field.label}</label>
+
                 <input
                   type="number"
-                  {...register(field.name)}
+                  {...register(field.name, validationRules)}
                 />
+
+                {errors[field.name] && (
+                  <p>{errors[field.name].message}</p>
+                )}
               </div>
             );
 
@@ -51,10 +73,15 @@ function DynamicForm({ schema }) {
             return (
               <div key={field.name}>
                 <label>{field.label}</label>
+
                 <input
                   type="date"
-                  {...register(field.name)}
+                  {...register(field.name, validationRules)}
                 />
+
+                {errors[field.name] && (
+                  <p>{errors[field.name].message}</p>
+                )}
               </div>
             );
 
