@@ -19,6 +19,20 @@ function DynamicForm({ schema }) {
           required: field.required
             ? `${field.label} is required`
             : false,
+
+          min: field.min
+            ? {
+                value: field.min,
+                message: `${field.label} must be at least ${field.min}`,
+              }
+            : undefined,
+
+          max: field.max
+            ? {
+                value: field.max,
+                message: `${field.label} must not exceed ${field.max}`,
+              }
+            : undefined,
         };
 
         switch (field.type) {
@@ -60,7 +74,10 @@ function DynamicForm({ schema }) {
 
                 <input
                   type="number"
-                  {...register(field.name, validationRules)}
+                  {...register(field.name, {
+                    ...validationRules,
+                    valueAsNumber: true,
+                  })}
                 />
 
                 {errors[field.name] && (

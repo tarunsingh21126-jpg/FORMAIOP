@@ -29,6 +29,8 @@ function App() {
     name: "age",
     label: "Age",
     required: true,
+    min: 18,
+    max:100,
   },
   {
     type: "date",
