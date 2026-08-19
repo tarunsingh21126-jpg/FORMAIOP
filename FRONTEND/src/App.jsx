@@ -1,128 +1,115 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
-import Signup from './COMPONENTS/Signup'
-// import Signup from './COMPONENTS/Signup'
+import { useEffect, useState } from 'react';
+import DynamicForm from './components/DynamicForm.jsx';
+import './App.css';
+import 
 
-function App() {
-  const [count, setCount] = useState(0)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
+// Which form this Week 1 demo loads. Nothing about its fields is
+// hardcoded anywhere else - only this id, used to fetch the schema.
+const FORM_ID = 'insurance-claim';
+
+export default function App() {
+  const [schema, setSchema] = useState(null);
+  const [loadError, setLoadError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [submittedValues, setSubmittedValues] = useState(null);
+  const [formKey, setFormKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSchema() {
+      setIsLoading(true);
+      setLoadError(null);
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/forms/${FORM_ID}`);
+        const payload = await response.json();
+
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.error || `Request failed with status ${response.status}`);
+        }
+
+        if (!cancelled) {
+          setSchema(payload.data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setLoadError(err.message);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadSchema();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function handleSubmitSuccess(values) {
+    setSubmittedValues(values);
+  }
+
+  function handleStartOver() {
+    setSubmittedValues(null);
+    setFormKey((key) => key + 1); // remounts DynamicForm with fresh defaults
+  }
 
   return (
-    <>
-    <Signup />
-      {/* <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section> */}
+    <div className="page">
+      <main className="card">
+        {isLoading && <p className="status-message">Loading form...</p>}
 
-      
+        {!isLoading && loadError && (
+          <div className="status-message status-message--error">
+            <p>Couldn't load the form: {loadError}</p>
+            <p className="hint">
+              Make sure the backend is running and the sample form has been seeded (
+              <code>npm run seed</code> in <code>backend/</code>).
+            </p>
+          </div>
+        )}
 
-      {/* <div className="ticks"></div> */}
+        {!isLoading && !loadError && schema && !submittedValues && (
+          <>
+            <header className="card-header">
+              <h1>{schema.title}</h1>
+              {schema.description && <p>{schema.description}</p>}
+            </header>
+            <DynamicForm key={formKey} schema={schema} onSubmitSuccess={handleSubmitSuccess} />
+          </>
+        )}
 
-
-      {/* <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section> */}
-
-      {/* <div className="ticks"></div>
-      <section id="spacer"></section> */}
-    </>
-  )
+        {submittedValues && (
+          <section className="submission-summary">
+            <h2>Claim submitted</h2>
+            <p>Here's what was sent:</p>
+            <dl>
+              {Object.entries(submittedValues).map(([id, value]) => (
+                <div className="summary-row" key={id}>
+                  <dt>{id}</dt>
+                  <dd>{formatValue(value)}</dd>
+                </div>
+              ))}
+            </dl>
+            <button type="button" onClick={handleStartOver}>
+              Submit another claim
+            </button>
+          </section>
+        )}
+      </main>
+    </div>
+  );
 }
 
-export default App
+function formatValue(value) {
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  if (value === '' || value === undefined || value === null) return '—';
+  return String(value);
+}
