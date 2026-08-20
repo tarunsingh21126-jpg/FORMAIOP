@@ -1,3 +1,12 @@
+import { useState } from 'react'
+import { Routes, Route, Navigate } from "react-router-dom";
+import reactLogo from './assets/react.svg'
+import viteLogo from './assets/vite.svg'
+import heroImg from './assets/hero.png'
+import './App.css'
+import Signup from './COMPONENTS/Signup'
+import Login from "./COMPONENTS/Login";
+import DynamicForm from "./COMPONENTS/DynamicForm";
 import { useEffect, useState } from 'react';
 import DynamicForm from './components/DynamicForm.jsx';
 import './App.css';
@@ -5,6 +14,36 @@ import
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
+function App() {
+  const [count, setCount] = useState(0)
+  const formSchema = [
+  {
+    type: "text",
+    name: "fullName",
+    label: "Full Name",
+    required: true,
+  },
+  {
+    type: "textarea",
+    name: "message",
+    label: "Message",
+    required: true,
+  },
+  {
+    type: "number",
+    name: "age",
+    label: "Age",
+    required: true,
+    min: 18,
+    max:100,
+  },
+  {
+    type: "date",
+    name: "birthDate",
+    label: "Birth Date",
+    required: true,
+  },
+];
 // Which form this Week 1 demo loads. Nothing about its fields is
 // hardcoded anywhere else - only this id, used to fetch the schema.
 const FORM_ID = 'insurance-claim';
@@ -76,6 +115,21 @@ export default function App() {
           </div>
         )}
 
+    <Routes>
+      <Route path="/" element={<DynamicForm schema={formSchema} />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route
+        path="/dynamic-form"
+        element={<DynamicForm schema={formSchema} />}
+      />
+    </Routes>
+    
+
+  );
+}
+
+export default App;
         {!isLoading && !loadError && schema && !submittedValues && (
           <>
             <header className="card-header">
