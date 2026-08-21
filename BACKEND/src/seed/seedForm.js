@@ -1,12 +1,4 @@
-/**
- * Seeds the sample "insurance-claim" form into MongoDB.
- *
- * Usage:
- *   npm run seed
- *
- * Safe to run multiple times - it upserts by formId rather than inserting
- * duplicates.
- */
+
 
 require('dotenv').config();
 
