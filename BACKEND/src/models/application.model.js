@@ -18,6 +18,18 @@ const ApplicationDocumentSchema = new Schema(
     name: { type: String, trim: true },
     url: { type: String, trim: true },
     uploadedAt: { type: Date },
+    uploadedBy: { type: String, trim: true },
+    storageKey: { type: String, trim: true },
+    mimeType: { type: String, trim: true },
+    sizeBytes: { type: Number, min: 0 },
+    checksum: { type: String, trim: true },
+    verificationStatus: {
+      type: String,
+      enum: ['pending', 'verified', 'rejected'],
+      default: 'pending',
+    },
+    verifiedAt: { type: Date },
+    verifiedBy: { type: String, trim: true },
     metadata: { type: Schema.Types.Mixed, default: {} },
   },
   { _id: false }
@@ -28,10 +40,33 @@ const ApplicationDocumentSchema = new Schema(
  */
 const ApplicationStatusHistorySchema = new Schema(
   {
-    status: { type: String, trim: true },
+    status: { type: String, enum: APPLICATION_STATUSES, required: true },
     changedAt: { type: Date, default: Date.now },
     changedBy: { type: String, trim: true },
     note: { type: String, default: '' },
+    metadata: { type: Schema.Types.Mixed, default: {} },
+  },
+  { _id: false }
+);
+
+const ApplicationProgressSchema = new Schema(
+  {
+    completedFields: { type: Number, min: 0, default: 0 },
+    totalFields: { type: Number, min: 0, default: 0 },
+    lastCalculatedAt: { type: Date },
+    calculationSource: { type: String, trim: true },
+  },
+  { _id: false }
+);
+
+const ApplicationSubmissionSchema = new Schema(
+  {
+    submittedAt: { type: Date },
+    submittedBy: { type: String, trim: true },
+    confirmationId: { type: String, trim: true },
+    channel: { type: String, trim: true },
+    ipAddress: { type: String, trim: true },
+    userAgent: { type: String, trim: true },
     metadata: { type: Schema.Types.Mixed, default: {} },
   },
   { _id: false }
@@ -43,9 +78,22 @@ const ApplicationStatusHistorySchema = new Schema(
  */
 const ApplicationSchema = new Schema(
   {
-    userId: { type: String, required: true, trim: true, index: true },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
     formId: { type: String, required: true, trim: true, index: true },
-    schemaVersion: { type: Number, required: true, min: 1 },
+    schemaVersion: {
+      type: Number,
+      required: true,
+      min: 1,
+      validate: {
+        validator: Number.isInteger,
+        message: 'schemaVersion must be an integer greater than or equal to 1',
+      },
+    },
     status: {
       type: String,
       enum: APPLICATION_STATUSES,
@@ -62,6 +110,10 @@ const ApplicationSchema = new Schema(
       min: 0,
       max: 100,
     },
+    progressDetails: {
+      type: ApplicationProgressSchema,
+      default: () => ({}),
+    },
     documents: {
       type: [ApplicationDocumentSchema],
       default: [],
@@ -70,11 +122,16 @@ const ApplicationSchema = new Schema(
       type: [ApplicationStatusHistorySchema],
       default: [],
     },
+    submission: {
+      type: ApplicationSubmissionSchema,
+      default: undefined,
+    },
   },
   { timestamps: true }
 );
 
 ApplicationSchema.index({ userId: 1, formId: 1, createdAt: -1 });
+ApplicationSchema.index({ formId: 1, schemaVersion: 1 });
 
 const Application = mongoose.model('Application', ApplicationSchema);
 

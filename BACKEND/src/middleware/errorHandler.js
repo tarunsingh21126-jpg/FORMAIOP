@@ -5,6 +5,8 @@
  * Recognizes:
  * - errors with an explicit `status` (thrown deliberately by controllers)
  * - Mongoose CastError (malformed ids) -> 400
+ * - Mongoose ValidationError -> 400
+ * - Mongo duplicate key errors -> 409
  * - everything else -> 500, without leaking internals to the client
  */
 function errorHandler(err, req, res, next) { // eslint-disable-line no-unused-vars
@@ -16,6 +18,18 @@ function errorHandler(err, req, res, next) { // eslint-disable-line no-unused-va
   if (err.name === 'CastError') {
     status = 400;
     message = 'Invalid identifier supplied';
+  }
+
+  if (err.name === 'ValidationError') {
+    status = 400;
+    message = Object.values(err.errors || {})
+      .map((validationError) => validationError.message)
+      .join(', ') || 'Validation failed';
+  }
+
+  if (err.code === 11000) {
+    status = 409;
+    message = 'A record with the same unique field already exists';
   }
 
   if (err.name === 'MongooseServerSelectionError' || err.name === 'MongoNetworkError') {

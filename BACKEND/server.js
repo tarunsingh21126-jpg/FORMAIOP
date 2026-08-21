@@ -3,9 +3,10 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
-const connectDB = require('./config/db');
-const formRoutes = require('./routes/formRoutes');
-const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
+const connectDB = require('./src/config/db');
+const formRoutes = require('./src/routes/formRoutes');
+const applicationRoutes = require('./src/routes/application.routes');
+const { errorHandler, notFoundHandler } = require('./src/middleware/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +21,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/forms', formRoutes);
+app.use('/api/applications', applicationRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

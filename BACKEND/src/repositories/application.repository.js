@@ -9,31 +9,32 @@ async function createApplication(payload) {
 }
 
 /**
- * Looks up an application by its public applicationId.
+ * Looks up an application by its MongoDB document id.
  */
-async function getApplicationByApplicationId(applicationId) {
-  return Application.findOne({ applicationId }).lean();
+async function findApplicationById(id) {
+  return Application.findById(id).lean();
 }
 
 /**
- * Lists applications using the supported lightweight filters.
+ * Applies partial updates to an application by its MongoDB document id.
  */
-async function listApplications(filters = {}) {
-  const query = {};
+async function updateApplication(id, updates) {
+  return Application.findByIdAndUpdate(id, updates, {
+    new: true,
+    runValidators: true,
+  }).lean();
+}
 
-  if (filters.applicantId) {
-    query.applicantId = filters.applicantId;
-  }
-
-  if (filters.formId) {
-    query.formId = filters.formId;
-  }
-
-  return Application.find(query).sort({ createdAt: -1 }).lean();
+/**
+ * Deletes an application by its MongoDB document id.
+ */
+async function deleteApplication(id) {
+  return Application.findByIdAndDelete(id).lean();
 }
 
 module.exports = {
   createApplication,
-  getApplicationByApplicationId,
-  listApplications,
+  findApplicationById,
+  updateApplication,
+  deleteApplication,
 };
