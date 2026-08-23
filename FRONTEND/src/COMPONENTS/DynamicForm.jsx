@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 
-function DynamicForm({ schema }) {
+function DynamicForm({ schema, onSubmitSuccess }) {
   const {
     register,
     handleSubmit,
@@ -10,7 +10,10 @@ function DynamicForm({ schema }) {
 
   const onSubmit = (data) => {
     console.log("Form Data:", data);
-    alert("Form submitted successfully!");
+
+    if (onSubmitSuccess) {
+      onSubmitSuccess(data);
+    }
   };
 
   const isFieldVisible = (field) => {
@@ -18,7 +21,12 @@ function DynamicForm({ schema }) {
       return true;
     }
 
-    const { field: dependentField, operator, value } = field.visibleWhen;
+    const {
+      field: dependentField,
+      operator,
+      value,
+    } = field.visibleWhen;
+
     const dependentValue = watch(dependentField);
 
     switch (operator) {
@@ -39,13 +47,17 @@ function DynamicForm({ schema }) {
     }
   };
 
-  if (!schema) {
+  if (!schema || !Array.isArray(schema.fields)) {
     return <p>No form schema provided.</p>;
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      {schema.map((field) => {
+    <form
+      className="dynamic-form"
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+    >
+      {schema.fields.map((field) => {
         if (!isFieldVisible(field)) {
           return null;
         }
@@ -72,73 +84,105 @@ function DynamicForm({ schema }) {
               : undefined,
         };
 
+        const fieldName = field.id || field.name;
+
         switch (field.type) {
           case "text":
             return (
-              <div key={field.name}>
-                <label>{field.label}</label>
+              <div key={fieldName}>
+                <label htmlFor={fieldName}>
+                  {field.label}
+                </label>
+
                 <br />
 
                 <input
+                  id={fieldName}
                   type="text"
-                  {...register(field.name, validationRules)}
+                  {...register(fieldName, validationRules)}
                 />
 
-                {errors[field.name] && (
-                  <p>{errors[field.name].message}</p>
+                {errors[fieldName] && (
+                  <p>
+                    {errors[fieldName].message}
+                  </p>
                 )}
               </div>
             );
 
           case "textarea":
             return (
-              <div key={field.name}>
-                <label>{field.label}</label>
+              <div key={fieldName}>
+                <label htmlFor={fieldName}>
+                  {field.label}
+                </label>
+
                 <br />
 
                 <textarea
-                  {...register(field.name, validationRules)}
+                  id={fieldName}
+                  {...register(
+                    fieldName,
+                    validationRules
+                  )}
                 />
 
-                {errors[field.name] && (
-                  <p>{errors[field.name].message}</p>
+                {errors[fieldName] && (
+                  <p>
+                    {errors[fieldName].message}
+                  </p>
                 )}
               </div>
             );
 
           case "number":
             return (
-              <div key={field.name}>
-                <label>{field.label}</label>
+              <div key={fieldName}>
+                <label htmlFor={fieldName}>
+                  {field.label}
+                </label>
+
                 <br />
 
                 <input
+                  id={fieldName}
                   type="number"
-                  {...register(field.name, {
+                  {...register(fieldName, {
                     ...validationRules,
                     valueAsNumber: true,
                   })}
                 />
 
-                {errors[field.name] && (
-                  <p>{errors[field.name].message}</p>
+                {errors[fieldName] && (
+                  <p>
+                    {errors[fieldName].message}
+                  </p>
                 )}
               </div>
             );
 
           case "date":
             return (
-              <div key={field.name}>
-                <label>{field.label}</label>
+              <div key={fieldName}>
+                <label htmlFor={fieldName}>
+                  {field.label}
+                </label>
+
                 <br />
 
                 <input
+                  id={fieldName}
                   type="date"
-                  {...register(field.name, validationRules)}
+                  {...register(
+                    fieldName,
+                    validationRules
+                  )}
                 />
 
-                {errors[field.name] && (
-                  <p>{errors[field.name].message}</p>
+                {errors[fieldName] && (
+                  <p>
+                    {errors[fieldName].message}
+                  </p>
                 )}
               </div>
             );
@@ -150,7 +194,9 @@ function DynamicForm({ schema }) {
 
       <br />
 
-      <button type="submit">Submit</button>
+      <button type="submit">
+        Submit
+      </button>
     </form>
   );
 }
