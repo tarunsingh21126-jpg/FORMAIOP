@@ -111,6 +111,21 @@ export default function DynamicField({ field, register, errors }) {
         </div>
       );
 
+
+    case 'date':
+      return (
+        <div className="form-field">
+          <label htmlFor={inputId}>{field.label}</label>
+          <input
+            id={inputId}
+            type="date"
+            aria-invalid={Boolean(errorMessage)}
+            {...register(field.id, rules)}
+          />
+          <FieldError message={errorMessage} />
+        </div>
+      );
+
     case 'select':
       return (
         <div className="form-field">
