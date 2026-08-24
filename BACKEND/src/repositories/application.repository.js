@@ -1,7 +1,7 @@
 const Application = require('../models/application.model');
 
 /**
- * Persists a new application record.
+ * Create and persist a new application.
  */
 async function createApplication(payload) {
   const application = await Application.create(payload);
@@ -9,27 +9,31 @@ async function createApplication(payload) {
 }
 
 /**
- * Looks up an application by its public applicationId.
+ * Find an application using its public application ID.
  */
 async function getApplicationByApplicationId(applicationId) {
   return Application.findOne({ applicationId }).lean();
 }
 
 /**
- * Lists applications using the supported lightweight filters.
+ * Get applications based on optional filters.
  */
 async function listApplications(filters = {}) {
   const query = {};
 
-  if (filters.applicantId) {
-    query.applicantId = filters.applicantId;
+  const { applicantId, formId } = filters;
+
+  if (applicantId) {
+    query.applicantId = applicantId;
   }
 
-  if (filters.formId) {
-    query.formId = filters.formId;
+  if (formId) {
+    query.formId = formId;
   }
 
-  return Application.find(query).sort({ createdAt: -1 }).lean();
+  return Application.find(query)
+    .sort({ createdAt: -1 })
+    .lean();
 }
 
 module.exports = {
