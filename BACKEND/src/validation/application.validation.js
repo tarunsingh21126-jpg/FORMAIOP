@@ -1,121 +1,150 @@
-/**
- * Creates and forwards a validation error.
- */
+const mongoose = require('mongoose');
+
 function nextValidationError(next, message) {
   const error = new Error(message);
   error.status = 400;
   return next(error);
 }
 
-/**
- * Checks whether a value is a non-empty string.
- */
-function isNonEmptyString(value) {
-  return typeof value === 'string' && value.trim().length > 0;
+function isPlainObject(value) {
+  return value !== null && !Array.isArray(value) && typeof value === 'object';
 }
 
-/**
- * Checks whether a value is a valid metadata object.
- */
-function isValidMetadata(value) {
+function isValidProgress(value) {
+  if (typeof value === 'number') {
+    return value >= 0 && value <= 100;
+  }
+
+  if (!isPlainObject(value)) {
+    return false;
+  }
+
+  const { completionPercentage, completedSections, currentSection, totalSections } = value;
+
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    !Array.isArray(value)
+    (completionPercentage === undefined ||
+      (typeof completionPercentage === 'number' && completionPercentage >= 0 && completionPercentage <= 100)) &&
+    (completedSections === undefined ||
+      (Array.isArray(completedSections) && completedSections.every((section) => typeof section === 'string'))) &&
+    (currentSection === undefined || typeof currentSection === 'string') &&
+    (totalSections === undefined || (Number.isInteger(totalSections) && totalSections >= 0))
   );
 }
 
-/**
- * Validates the body for application creation.
- */
-function validateCreateApplication(req, res, next) {
-  const {
-    formId,
-    applicantId,
-    referenceNumber,
-    notes,
-    metadata,
-  } = req.body || {};
+function validateOptionalString(value, fieldName, next) {
+  if (value !== undefined && (typeof value !== 'string' || !value.trim())) {
+    return nextValidationError(next, `${fieldName} must be a non-empty string when provided`);
+  }
 
-  if (!isNonEmptyString(formId)) {
+  return null;
+}
+
+function validateCreateApplication(req, res, next) {
+  const { userId, formId, form, schemaVersion, status, responses, progress, documents, statusHistory, submission } = req.body || {};
+
+  if (!userId || !mongoose.isObjectIdOrHexString(userId)) {
+    return nextValidationError(next, 'A valid userId is required');
+  }
+
+  if (!formId || typeof formId !== 'string' || !formId.trim()) {
     return nextValidationError(next, 'A formId is required');
   }
 
-  if (!isNonEmptyString(applicantId)) {
-    return nextValidationError(next, 'An applicantId is required');
+  if (form !== undefined && !mongoose.isObjectIdOrHexString(form)) {
+    return nextValidationError(next, 'form must be a valid identifier when provided');
   }
 
-  if (
-    referenceNumber !== undefined &&
-    typeof referenceNumber !== 'string'
-  ) {
-    return nextValidationError(
-      next,
-      'referenceNumber must be a string when provided'
-    );
+  if (!Number.isInteger(schemaVersion) || schemaVersion < 1) {
+    return nextValidationError(next, 'schemaVersion must be an integer greater than or equal to 1');
   }
 
-  if (notes !== undefined && typeof notes !== 'string') {
-    return nextValidationError(
-      next,
-      'notes must be a string when provided'
-    );
+  if (validateOptionalString(status, 'status', next)) {
+    return;
   }
 
-  if (metadata !== undefined && !isValidMetadata(metadata)) {
-    return nextValidationError(
-      next,
-      'metadata must be an object when provided'
-    );
+  if (responses !== undefined && !isPlainObject(responses)) {
+    return nextValidationError(next, 'responses must be an object when provided');
+  }
+
+  if (progress !== undefined && !isValidProgress(progress)) {
+    return nextValidationError(next, 'progress must contain valid completion details when provided');
+  }
+
+  if (documents !== undefined && !Array.isArray(documents)) {
+    return nextValidationError(next, 'documents must be an array when provided');
+  }
+
+  if (statusHistory !== undefined && !Array.isArray(statusHistory)) {
+    return nextValidationError(next, 'statusHistory must be an array when provided');
+  }
+
+  if (submission !== undefined && !isPlainObject(submission)) {
+    return nextValidationError(next, 'submission must be an object when provided');
   }
 
   return next();
 }
 
-/**
- * Validates the applicationId route parameter.
- */
+function validateUpdateApplication(req, res, next) {
+  const { userId, formId, form, schemaVersion, status, responses, progress, documents, statusHistory, submission } = req.body || {};
+
+  if (!isPlainObject(req.body) || Object.keys(req.body).length === 0) {
+    return nextValidationError(next, 'A request body is required for application updates');
+  }
+
+  if (userId !== undefined && !mongoose.isObjectIdOrHexString(userId)) {
+    return nextValidationError(next, 'userId must be a valid identifier when provided');
+  }
+
+  if (form !== undefined && !mongoose.isObjectIdOrHexString(form)) {
+    return nextValidationError(next, 'form must be a valid identifier when provided');
+  }
+
+  if (validateOptionalString(formId, 'formId', next)) {
+    return;
+  }
+
+  if (schemaVersion !== undefined && (!Number.isInteger(schemaVersion) || schemaVersion < 1)) {
+    return nextValidationError(next, 'schemaVersion must be an integer greater than or equal to 1');
+  }
+
+  if (validateOptionalString(status, 'status', next)) {
+    return;
+  }
+
+  if (responses !== undefined && !isPlainObject(responses)) {
+    return nextValidationError(next, 'responses must be an object when provided');
+  }
+
+  if (progress !== undefined && !isValidProgress(progress)) {
+    return nextValidationError(next, 'progress must contain valid completion details when provided');
+  }
+
+  if (documents !== undefined && !Array.isArray(documents)) {
+    return nextValidationError(next, 'documents must be an array when provided');
+  }
+
+  if (statusHistory !== undefined && !Array.isArray(statusHistory)) {
+    return nextValidationError(next, 'statusHistory must be an array when provided');
+  }
+
+  if (submission !== undefined && !isPlainObject(submission)) {
+    return nextValidationError(next, 'submission must be an object when provided');
+  }
+
+  return next();
+}
+
 function validateApplicationIdParam(req, res, next) {
   const { applicationId } = req.params;
-
-  if (!isNonEmptyString(applicationId)) {
-    return nextValidationError(next, 'An applicationId is required');
+  if (!applicationId || !mongoose.isObjectIdOrHexString(applicationId)) {
+    return nextValidationError(next, 'A valid applicationId is required');
   }
-
-  return next();
-}
-
-/**
- * Validates supported application listing filters.
- */
-function validateApplicationListQuery(req, res, next) {
-  const { applicantId, formId } = req.query;
-
-  if (
-    applicantId !== undefined &&
-    !isNonEmptyString(applicantId)
-  ) {
-    return nextValidationError(
-      next,
-      'applicantId must be a non-empty string when provided'
-    );
-  }
-
-  if (
-    formId !== undefined &&
-    !isNonEmptyString(formId)
-  ) {
-    return nextValidationError(
-      next,
-      'formId must be a non-empty string when provided'
-    );
-  }
-
   return next();
 }
 
 module.exports = {
   validateCreateApplication,
+  validateUpdateApplication,
   validateApplicationIdParam,
-  validateApplicationListQuery,
 };

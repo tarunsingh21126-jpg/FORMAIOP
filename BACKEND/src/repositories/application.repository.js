@@ -8,36 +8,24 @@ async function createApplication(payload) {
   return application.toObject();
 }
 
-/**
- * Find an application using its public application ID.
- */
-async function getApplicationByApplicationId(applicationId) {
-  return Application.findOne({ applicationId }).lean();
+async function findApplicationById(id) {
+  return Application.findById(id).lean();
 }
 
-/**
- * Get applications based on optional filters.
- */
-async function listApplications(filters = {}) {
-  const query = {};
+async function updateApplication(id, updates) {
+  return Application.findByIdAndUpdate(id, updates, {
+    new: true,
+    runValidators: true,
+  }).lean();
+}
 
-  const { applicantId, formId } = filters;
-
-  if (applicantId) {
-    query.applicantId = applicantId;
-  }
-
-  if (formId) {
-    query.formId = formId;
-  }
-
-  return Application.find(query)
-    .sort({ createdAt: -1 })
-    .lean();
+async function deleteApplication(id) {
+  return Application.findByIdAndDelete(id).lean();
 }
 
 module.exports = {
   createApplication,
-  getApplicationByApplicationId,
-  listApplications,
+  findApplicationById,
+  updateApplication,
+  deleteApplication,
 };

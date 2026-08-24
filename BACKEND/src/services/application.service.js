@@ -1,34 +1,28 @@
-const { randomUUID } = require('crypto');
-
 const applicationRepository = require('../repositories/application.repository');
 const { DEFAULT_APPLICATION_STATUS } = require('../constants/application.constants');
 
-/**
- * Creates the minimal application shell. Submission workflow and progress
- * handling are intentionally deferred.
- */
 async function createApplication(payload) {
   const application = await applicationRepository.createApplication({
-    applicationId: `app_${randomUUID()}`,
+    userId: payload.userId,
     formId: payload.formId.trim(),
-    applicantId: payload.applicantId.trim(),
-    status: DEFAULT_APPLICATION_STATUS,
-    referenceNumber: payload.referenceNumber?.trim(),
-    notes: payload.notes?.trim() || '',
-    metadata: payload.metadata || {},
+    form: payload.form,
+    schemaVersion: payload.schemaVersion,
+    status: payload.status || DEFAULT_APPLICATION_STATUS,
+    responses: payload.responses || {},
+    progress: normalizeProgress(payload.progress),
+    documents: payload.documents || [],
+    statusHistory: payload.statusHistory || [],
+    submission: payload.submission,
   });
 
   return toPublicApplication(application);
 }
 
-/**
- * Retrieves a single application by its public id.
- */
-async function getApplicationByApplicationId(applicationId) {
-  const application = await applicationRepository.getApplicationByApplicationId(applicationId);
+async function getApplication(id) {
+  const application = await applicationRepository.findApplicationById(id);
 
   if (!application) {
-    const error = new Error(`No application found with id "${applicationId}"`);
+    const error = new Error(`No application found with id "${id}"`);
     error.status = 404;
     throw error;
   }
@@ -36,38 +30,89 @@ async function getApplicationByApplicationId(applicationId) {
   return toPublicApplication(application);
 }
 
-/**
- * Lists applications for the supplied lightweight filters.
- */
-async function listApplications(filters) {
-  const applications = await applicationRepository.listApplications(filters);
-  return applications.map(toPublicApplication);
+async function updateApplication(id, updates) {
+  await getApplication(id);
+  const application = await applicationRepository.updateApplication(
+    id,
+    sanitizeApplicationUpdates(updates)
+  );
+
+  if (!application) {
+    const error = new Error(`No application found with id "${id}"`);
+    error.status = 404;
+    throw error;
+  }
+
+  return toPublicApplication(application);
 }
 
-/**
- * Strips internal Mongo fields and keeps the API contract consistent.
- */
+async function deleteApplication(id) {
+  const application = await applicationRepository.deleteApplication(id);
+
+  if (!application) {
+    const error = new Error(`No application found with id "${id}"`);
+    error.status = 404;
+    throw error;
+  }
+
+  return toPublicApplication(application);
+}
+
 function toPublicApplication(applicationDoc) {
   if (!applicationDoc) {
     return null;
   }
 
   return {
-    applicationId: applicationDoc.applicationId,
+    id: applicationDoc._id?.toString?.() || applicationDoc.id || null,
+    userId: applicationDoc.userId,
     formId: applicationDoc.formId,
-    applicantId: applicationDoc.applicantId,
+    form: applicationDoc.form,
+    schemaVersion: applicationDoc.schemaVersion,
     status: applicationDoc.status,
-    referenceNumber: applicationDoc.referenceNumber || null,
-    notes: applicationDoc.notes || '',
-    metadata: applicationDoc.metadata || {},
+    responses: applicationDoc.responses || {},
+    progress: applicationDoc.progress || {},
+    documents: applicationDoc.documents || [],
+    statusHistory: applicationDoc.statusHistory || [],
+    submission: applicationDoc.submission,
     createdAt: applicationDoc.createdAt,
     updatedAt: applicationDoc.updatedAt,
   };
 }
 
+function sanitizeApplicationUpdates(updates = {}) {
+  const allowedFields = [
+    'userId',
+    'formId',
+    'form',
+    'schemaVersion',
+    'status',
+    'responses',
+    'progress',
+    'documents',
+    'statusHistory',
+    'submission',
+  ];
+
+  return Object.fromEntries(
+    allowedFields
+      .filter((field) => updates[field] !== undefined)
+      .map((field) => [field, updates[field]])
+  );
+}
+
+function normalizeProgress(progress) {
+  if (typeof progress === 'number') {
+    return { completionPercentage: progress };
+  }
+
+  return progress || {};
+}
+
 module.exports = {
   createApplication,
-  getApplicationByApplicationId,
-  listApplications,
+  getApplication,
+  updateApplication,
+  deleteApplication,
   toPublicApplication,
 };

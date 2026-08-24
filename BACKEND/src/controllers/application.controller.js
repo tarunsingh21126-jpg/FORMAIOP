@@ -21,13 +21,11 @@ async function createApplication(req, res, next) {
 /**
  * GET /api/applications/:applicationId
  *
- * Returns a single application by public id.
+ * Returns a single application by id.
  */
 async function getApplication(req, res, next) {
   try {
-    const application = await applicationService.getApplicationByApplicationId(
-      req.params.applicationId
-    );
+    const application = await applicationService.getApplication(req.params.applicationId);
 
     res.status(200).json({
       success: true,
@@ -39,21 +37,30 @@ async function getApplication(req, res, next) {
 }
 
 /**
- * GET /api/applications
+ * PUT /api/applications/:applicationId
  *
- * Lists applications for the supported query filters.
+ * Applies a partial update to an application.
  */
-async function listApplications(req, res, next) {
+async function updateApplication(req, res, next) {
   try {
-    const applications = await applicationService.listApplications({
-      applicantId: req.query.applicantId,
-      formId: req.query.formId,
-    });
+    const application = await applicationService.updateApplication(
+      req.params.applicationId,
+      req.body
+    );
 
     res.status(200).json({
       success: true,
-      data: applications,
+      data: application,
     });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function deleteApplication(req, res, next) {
+  try {
+    const application = await applicationService.deleteApplication(req.params.applicationId);
+    res.status(200).json({ success: true, data: application });
   } catch (err) {
     next(err);
   }
@@ -62,5 +69,6 @@ async function listApplications(req, res, next) {
 module.exports = {
   createApplication,
   getApplication,
-  listApplications,
+  updateApplication,
+  deleteApplication,
 };
