@@ -18,27 +18,37 @@ function App() {
         id: "fullName",
         type: "text",
         label: "Full Name",
-        required: true,
+        validation: {
+          required: true,
+        }
+        
       },
       {
         id: "message",
         type: "textarea",
         label: "Message",
-        required: true,
+        validation: {
+          required: true,
+        }
       },
       {
         id: "age",
         type: "number",
         label: "Age",
-        required: true,
-        min: 18,
-        max: 100,
+        validation: {
+          required: true,
+          min: 18,
+          max: 100,
+        },
+        
       },
       {
         id: "birthDate",
         type: "date",
         label: "Birth Date",
-        required: true,
+        validation: {
+          required: true,
+        },
       },
     ],
   };
