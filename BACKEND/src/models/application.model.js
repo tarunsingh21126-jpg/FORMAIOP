@@ -19,6 +19,7 @@ const ApplicationDocumentSchema = new Schema(
   {
     documentId: { type: String, trim: true },
     type: { type: String, trim: true },
+    documentType: { type: String, trim: true },
     name: { type: String, trim: true },
     filename: { type: String, trim: true },
     url: { type: String, trim: true },
@@ -136,7 +137,7 @@ const ApplicationSchema = new Schema(
         message: 'responses must be an object',
       },
     },
-        progress: {
+    progress: {
       type: ApplicationProgressSchema,
       default: () => ({}),
     },
@@ -147,6 +148,10 @@ const ApplicationSchema = new Schema(
     statusHistory: {
       type: [ApplicationStatusHistorySchema],
       default: [],
+    },
+    submission: {
+      type: ApplicationSubmissionSchema,
+      default: undefined,
     },
   },
   { timestamps: true }

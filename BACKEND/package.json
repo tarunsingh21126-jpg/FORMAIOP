@@ -19,7 +19,7 @@
   "type": "commonjs",
   "dependencies": {
     "@langchain/core": "^0.3.68",
-    "@langchain/openai": "^0.5.9",
+    "@langchain/openai": "^0.5.18",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

@@ -3,10 +3,10 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
-const connectDB = require('./config/db');
-const formRoutes = require('./routes/formRoutes');
-const aiRoutes = require('./routes/aiRoutes');
-const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
+const connectDB = require('./src/config/db');
+const formRoutes = require('./src/routes/formRoutes');
+const aiRoutes = require('./src/routes/aiRoutes');
+const { errorHandler, notFoundHandler } = require('./src/middleware/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
