@@ -40,6 +40,23 @@ export default function DynamicField({ field, register, errors, aiFilled }) {
       return <div className="form-field"><FieldLabel field={field} inputId={inputId} aiFilled={aiFilled} /><input {...common} type="number" placeholder={field.placeholder} {...register(field.id, { ...rules, valueAsNumber: true })} /><FieldError message={errorMessage} /></div>;
     case 'textarea':
       return <div className="form-field"><FieldLabel field={field} inputId={inputId} aiFilled={aiFilled} /><textarea {...common} rows={4} placeholder={field.placeholder} {...register(field.id, rules)} /><FieldError message={errorMessage} /></div>;
+    
+        case 'date':
+  return (
+    <div className="form-field">
+      <FieldLabel
+        field={field}
+        inputId={inputId}
+        aiFilled={aiFilled}
+      />
+      <input
+        {...common}
+        type="date"
+        {...register(field.id, rules)}
+      />
+      <FieldError message={errorMessage} />
+    </div>
+  );
     case 'select':
       return <div className="form-field"><FieldLabel field={field} inputId={inputId} aiFilled={aiFilled} /><select {...common} defaultValue="" {...register(field.id, rules)}><option value="" disabled>Select an option…</option>{(field.options || []).map((option) => <option key={String(option.value)} value={String(option.value)}>{option.label}</option>)}</select><FieldError message={errorMessage} /></div>;
     case 'checkbox':
