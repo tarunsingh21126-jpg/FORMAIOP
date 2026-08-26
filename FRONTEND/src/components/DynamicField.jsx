@@ -12,8 +12,8 @@ function buildValidationRules(field) {
   return rules;
 }
 
-function FieldError({ message }) {
-  return message ? <p className="field-error" role="alert">{message}</p> : null;
+function FieldError({ message, id }) {
+  return message ? <p id={id} className="field-error" role="alert">{message}</p> : null;
 }
 
 function FieldLabel({ field, inputId, aiFilled }) {
