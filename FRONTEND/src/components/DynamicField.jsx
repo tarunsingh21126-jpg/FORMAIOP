@@ -37,7 +37,21 @@ export default function DynamicField({ field, register, errors, aiFilled }) {
     case 'email':
       return <div className="form-field"><FieldLabel field={field} inputId={inputId} aiFilled={aiFilled} /><input {...common} type={field.type} placeholder={field.placeholder} {...register(field.id, rules)} /><FieldError message={errorMessage} /></div>;
     case 'number':
-      return <div className="form-field"><FieldLabel field={field} inputId={inputId} aiFilled={aiFilled} /><input {...common} type="number" placeholder={field.placeholder} {...register(field.id, { ...rules, valueAsNumber: true })} /><FieldError message={errorMessage} /></div>;
+  return (
+    <div className="form-field">
+      <FieldLabel field={field} inputId={inputId} aiFilled={aiFilled} />
+      <input
+        {...common}
+        type="number"
+        placeholder={field.placeholder}
+        {...register(field.id, {
+          ...rules,
+          setValueAs: (value) => (value === '' ? undefined : Number(value)),
+        })}
+      />
+      <FieldError message={errorMessage} />
+    </div>
+  );
     case 'textarea':
       return <div className="form-field"><FieldLabel field={field} inputId={inputId} aiFilled={aiFilled} /><textarea {...common} rows={4} placeholder={field.placeholder} {...register(field.id, rules)} /><FieldError message={errorMessage} /></div>;
     
