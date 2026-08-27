@@ -1,19 +1,25 @@
 const applicationRepository = require('../repositories/application.repository');
-const { DEFAULT_APPLICATION_STATUS } = require('../constants/application.constants');
+const {
+  DEFAULT_APPLICATION_STATUS,
+  APPLICATION_STATUS_DRAFT,
+} = require('../constants/application.constants');
 
-async function createApplication(payload) {
-  const application = await applicationRepository.createApplication({
-    userId: payload.userId,
-    formId: payload.formId.trim(),
+async function createApplication(payload, actor) {
+  const effectiveUserId = resolveActorId(actor) || payload.userId;
+  const normalizedPayload = {
+    userId: effectiveUserId,
+    formId: String(payload.formId || '').trim(),
     form: payload.form,
-    schemaVersion: payload.schemaVersion,
+    schemaVersion: Number(payload.schemaVersion),
     status: payload.status || DEFAULT_APPLICATION_STATUS,
     responses: payload.responses || {},
     progress: normalizeProgress(payload.progress),
-    documents: payload.documents || [],
-    statusHistory: payload.statusHistory || [],
+    documents: Array.isArray(payload.documents) ? payload.documents : [],
+    statusHistory: buildInitialStatusHistory(payload.statusHistory, payload.status || DEFAULT_APPLICATION_STATUS, effectiveUserId),
     submission: payload.submission,
-  });
+  };
+
+  const application = await applicationRepository.createApplication(normalizedPayload);
 
   return toPublicApplication(application);
 }
@@ -81,18 +87,7 @@ function toPublicApplication(applicationDoc) {
 }
 
 function sanitizeApplicationUpdates(updates = {}) {
-  const allowedFields = [
-    'userId',
-    'formId',
-    'form',
-    'schemaVersion',
-    'status',
-    'responses',
-    'progress',
-    'documents',
-    'statusHistory',
-    'submission',
-  ];
+  const allowedFields = ['responses', 'progress', 'documents'];
 
   return Object.fromEntries(
     allowedFields
@@ -101,12 +96,58 @@ function sanitizeApplicationUpdates(updates = {}) {
   );
 }
 
+function resolveActorId(actor) {
+  if (!actor) return null;
+
+  if (typeof actor === 'string') return actor;
+
+  if (typeof actor === 'object') {
+    return actor._id || actor.id || actor.userId || null;
+  }
+
+  return null;
+}
+
+function buildInitialStatusHistory(existingHistory, status, actorId) {
+  if (Array.isArray(existingHistory) && existingHistory.length > 0) {
+    return existingHistory;
+  }
+
+  return [{
+    previousStatus: null,
+    newStatus: status || APPLICATION_STATUS_DRAFT,
+    changedBy: actorId || 'system',
+    reason: 'Application created',
+  }];
+}
+
 function normalizeProgress(progress) {
   if (typeof progress === 'number') {
     return { completionPercentage: progress };
   }
 
-  return progress || {};
+  if (progress && typeof progress === 'object') {
+    return {
+      completionPercentage:
+        typeof progress.completionPercentage === 'number'
+          ? progress.completionPercentage
+          : 0,
+      completedSections: Array.isArray(progress.completedSections)
+        ? progress.completedSections
+        : [],
+      currentSection: progress.currentSection || undefined,
+      totalSections:
+        Number.isInteger(progress.totalSections) && progress.totalSections >= 0
+          ? progress.totalSections
+          : 0,
+    };
+  }
+
+  return {
+    completionPercentage: 0,
+    completedSections: [],
+    totalSections: 0,
+  };
 }
 
 module.exports = {

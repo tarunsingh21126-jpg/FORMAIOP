@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { APPLICATION_STATUSES } = require('../constants/application.constants');
 
 function nextValidationError(next, message) {
   const error = new Error(message);
@@ -8,6 +9,18 @@ function nextValidationError(next, message) {
 
 function isPlainObject(value) {
   return value !== null && !Array.isArray(value) && typeof value === 'object';
+}
+
+function resolveActorId(req) {
+  const fromRequest = req?.user || req?.actor || req?.context?.user || req?.context?.actor;
+  if (!fromRequest) return null;
+
+  if (typeof fromRequest === 'string') return fromRequest;
+  if (typeof fromRequest === 'object') {
+    return fromRequest._id || fromRequest.id || fromRequest.userId || null;
+  }
+
+  return null;
 }
 
 function isValidProgress(value) {
@@ -40,10 +53,39 @@ function validateOptionalString(value, fieldName, next) {
 }
 
 function validateCreateApplication(req, res, next) {
-  const { userId, formId, form, schemaVersion, status, responses, progress, documents, statusHistory, submission } = req.body || {};
+  const body = req.body || {};
+  const { formId, form, schemaVersion, responses, progress, documents, status, statusHistory, submission, submittedAt } = body;
+  const actorId = resolveActorId(req);
+  const protectedFields = [
+    'owner',
+    'status',
+    'statusHistory',
+    'submission',
+    'submittedAt',
+    'submittedBy',
+    'submissionReference',
+    '_id',
+    'id',
+    'createdAt',
+    'updatedAt',
+  ];
 
-  if (!userId || !mongoose.isObjectIdOrHexString(userId)) {
-    return nextValidationError(next, 'A valid userId is required');
+  for (const field of protectedFields) {
+    if (Object.prototype.hasOwnProperty.call(body, field)) {
+      return nextValidationError(next, `The "${field}" field is protected and cannot be set by clients`);
+    }
+  }
+
+  if (actorId) {
+    if (body.userId && body.userId !== actorId) {
+      return nextValidationError(next, 'The authenticated actor is the application owner');
+    }
+    body.userId = actorId;
+  } else {
+    const suppliedUserId = body.userId;
+    if (!suppliedUserId || !mongoose.isObjectIdOrHexString(suppliedUserId)) {
+      return nextValidationError(next, 'A valid userId is required');
+    }
   }
 
   if (!formId || typeof formId !== 'string' || !formId.trim()) {
@@ -58,8 +100,20 @@ function validateCreateApplication(req, res, next) {
     return nextValidationError(next, 'schemaVersion must be an integer greater than or equal to 1');
   }
 
-  if (validateOptionalString(status, 'status', next)) {
-    return;
+  if (status !== undefined) {
+    return nextValidationError(next, 'The "status" field is protected and cannot be set by clients');
+  }
+
+  if (statusHistory !== undefined) {
+    return nextValidationError(next, 'The "statusHistory" field is protected and cannot be set by clients');
+  }
+
+  if (submission !== undefined) {
+    return nextValidationError(next, 'The "submission" field is protected and cannot be set by clients');
+  }
+
+  if (submittedAt !== undefined) {
+    return nextValidationError(next, 'The "submittedAt" field is protected and cannot be set by clients');
   }
 
   if (responses !== undefined && !isPlainObject(responses)) {
@@ -72,45 +126,42 @@ function validateCreateApplication(req, res, next) {
 
   if (documents !== undefined && !Array.isArray(documents)) {
     return nextValidationError(next, 'documents must be an array when provided');
-  }
-
-  if (statusHistory !== undefined && !Array.isArray(statusHistory)) {
-    return nextValidationError(next, 'statusHistory must be an array when provided');
-  }
-
-  if (submission !== undefined && !isPlainObject(submission)) {
-    return nextValidationError(next, 'submission must be an object when provided');
   }
 
   return next();
 }
 
 function validateUpdateApplication(req, res, next) {
-  const { userId, formId, form, schemaVersion, status, responses, progress, documents, statusHistory, submission } = req.body || {};
+  const body = req.body || {};
+  const protectedFields = [
+    'userId',
+    'formId',
+    'form',
+    'schemaVersion',
+    'status',
+    'statusHistory',
+    'submission',
+    'submittedAt',
+    'submittedBy',
+    'submissionReference',
+    'owner',
+    '_id',
+    'id',
+    'createdAt',
+    'updatedAt',
+  ];
 
-  if (!isPlainObject(req.body) || Object.keys(req.body).length === 0) {
+  if (!isPlainObject(body) || Object.keys(body).length === 0) {
     return nextValidationError(next, 'A request body is required for application updates');
   }
 
-  if (userId !== undefined && !mongoose.isObjectIdOrHexString(userId)) {
-    return nextValidationError(next, 'userId must be a valid identifier when provided');
+  for (const field of protectedFields) {
+    if (Object.prototype.hasOwnProperty.call(body, field)) {
+      return nextValidationError(next, `The "${field}" field cannot be updated via the generic application endpoint`);
+    }
   }
 
-  if (form !== undefined && !mongoose.isObjectIdOrHexString(form)) {
-    return nextValidationError(next, 'form must be a valid identifier when provided');
-  }
-
-  if (validateOptionalString(formId, 'formId', next)) {
-    return;
-  }
-
-  if (schemaVersion !== undefined && (!Number.isInteger(schemaVersion) || schemaVersion < 1)) {
-    return nextValidationError(next, 'schemaVersion must be an integer greater than or equal to 1');
-  }
-
-  if (validateOptionalString(status, 'status', next)) {
-    return;
-  }
+  const { responses, progress, documents } = body;
 
   if (responses !== undefined && !isPlainObject(responses)) {
     return nextValidationError(next, 'responses must be an object when provided');
@@ -122,14 +173,6 @@ function validateUpdateApplication(req, res, next) {
 
   if (documents !== undefined && !Array.isArray(documents)) {
     return nextValidationError(next, 'documents must be an array when provided');
-  }
-
-  if (statusHistory !== undefined && !Array.isArray(statusHistory)) {
-    return nextValidationError(next, 'statusHistory must be an array when provided');
-  }
-
-  if (submission !== undefined && !isPlainObject(submission)) {
-    return nextValidationError(next, 'submission must be an object when provided');
   }
 
   return next();

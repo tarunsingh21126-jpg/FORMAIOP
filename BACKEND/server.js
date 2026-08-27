@@ -5,6 +5,7 @@ const cors = require('cors');
 
 const connectDB = require('./src/config/db');
 const formRoutes = require('./src/routes/formRoutes');
+const applicationRoutes = require('./src/routes/application.routes');
 const aiRoutes = require('./src/routes/aiRoutes');
 const {
   errorHandler,
@@ -56,6 +57,7 @@ app.get('/api/health', (req, res) => {
 
 // Routes
 app.use('/api/forms', formRoutes);
+app.use('/api/applications', applicationRoutes);
 app.use('/api/ai', aiRoutes);
 
 // Error handling

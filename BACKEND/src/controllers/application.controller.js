@@ -7,7 +7,8 @@ const applicationService = require('../services/application.service');
  */
 async function createApplication(req, res, next) {
   try {
-    const application = await applicationService.createApplication(req.body);
+    const actor = req.user || req.actor || req.context?.user || req.context?.actor || null;
+    const application = await applicationService.createApplication(req.body, actor);
 
     res.status(201).json({
       success: true,
