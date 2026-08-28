@@ -66,6 +66,8 @@ export default function DynamicField({ field, register, errors, aiFilled }) {
       <input
         {...common}
         type="date"
+        min={field.validation?.min} 
+        max={field.validation?.max} 
         {...register(field.id, rules)}
       />
       <FieldError message={errorMessage} />
