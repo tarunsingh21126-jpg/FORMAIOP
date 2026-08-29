@@ -96,6 +96,9 @@ export default function DynamicForm({ schema, apiBaseUrl, onSubmitSuccess }) {
           rows={5}
           disabled={aiState === 'loading'}
         />
+        <div className="character-count">
+          {aiText.length}/10000 characters
+        </div>
         <div className="magic-actions">
           <button type="button" className="ai-button" onClick={fillWithAI} disabled={aiState === 'loading'}>
             {aiState === 'loading' ? <><span className="mini-spinner" /> Analyzing…</> : <>✦ Fill Form with AI</>}
