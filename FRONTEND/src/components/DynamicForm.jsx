@@ -94,6 +94,7 @@ export default function DynamicForm({ schema, apiBaseUrl, onSubmitSuccess }) {
           onChange={(event) => { setAiText(event.target.value); if (aiState !== 'loading') setAiState('idle'); setAiError(''); }}
           placeholder="Example: I hit a deer on I-95 yesterday in my Honda. The windshield shattered and nobody was injured."
           rows={5}
+          maxLength={10000}
           disabled={aiState === 'loading'}
         />
         <div className="character-count">
