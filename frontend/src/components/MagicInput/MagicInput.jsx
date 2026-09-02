@@ -10,6 +10,7 @@ export default function MagicInput({ formId, onExtracted }) {
   const [text, setText] = useState('');
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
   const [message, setMessage] = useState('');
+  const MAX_TEXT_LENGTH = 10000;
 
   const handleExtract = async () => {
     if (!text.trim()) return;
@@ -36,11 +37,14 @@ export default function MagicInput({ formId, onExtracted }) {
       <textarea
         id="magic-textarea"
         rows={4}
+        maxLength={MAX_TEXT_LENGTH}
         placeholder="e.g. I hit a deer on I-95 yesterday in my Honda. The windshield shattered."
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
-
+      <p className="magic-input-counter">
+        {text.length} / {MAX_TEXT_LENGTH}
+      </p>
       <div className="magic-input-actions">
         <button
           type="button"
