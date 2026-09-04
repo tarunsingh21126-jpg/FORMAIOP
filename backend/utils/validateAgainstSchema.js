@@ -56,4 +56,69 @@ function isValidForType(value, field) {
   }
 }
 
-module.exports = { validateAgainstSchema };
+function validateResponses(responses, formSchema, requireRequired) {
+  const { safeData, rejected } = validateAgainstSchema(responses, formSchema);
+  if (rejected.length) {
+    const error = new Error(`Invalid response fields: ${rejected.map((item) => item.key).join(', ')}`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const invalidRules = [];
+  for (const field of formSchema.fields) {
+    const value = safeData[field.name];
+    if (value === undefined || value === null || value === '') continue;
+    const rules = field.validation || {};
+    if (rules.minLength !== undefined && typeof value === 'string' && value.length < rules.minLength) invalidRules.push(field.name);
+    if (rules.maxLength !== undefined && typeof value === 'string' && value.length > rules.maxLength) invalidRules.push(field.name);
+    if (rules.min !== undefined && typeof value === 'number' && value < rules.min) invalidRules.push(field.name);
+    if (rules.max !== undefined && typeof value === 'number' && value > rules.max) invalidRules.push(field.name);
+    if (rules.pattern && typeof value === 'string' && !(new RegExp(rules.pattern)).test(value)) invalidRules.push(field.name);
+    if (field.type === 'email' && typeof value === 'string' && !/^\S+@\S+\.\S+$/.test(value)) invalidRules.push(field.name);
+  }
+  if (invalidRules.length) {
+    const error = new Error(`Responses failed validation: ${[...new Set(invalidRules)].join(', ')}`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (requireRequired) {
+    const missing = formSchema.fields
+      .filter((field) => field.required && isVisible(field, safeData) && (safeData[field.name] === undefined || safeData[field.name] === ''))
+      .map((field) => field.name);
+    if (missing.length) {
+      const error = new Error(`Missing required responses: ${missing.join(', ')}`);
+      error.statusCode = 400;
+      throw error;
+    }
+  }
+
+  return safeData;
+}
+
+function isVisible(field, responses) {
+  if (!field.showIf) return true;
+  const actual = responses[field.showIf.field];
+  const expected = field.showIf.value;
+  if (field.showIf.operator === 'equals') return actual === expected;
+  if (field.showIf.operator === 'notEquals') return actual !== expected;
+  return Array.isArray(actual) ? actual.includes(expected) : String(actual || '').includes(String(expected));
+}
+
+function calculateProgress(responses, formSchema) {
+  const visibleFields = formSchema.fields.filter((field) => {
+    if (!field.showIf) return true;
+    const actual = responses[field.showIf.field];
+    const expected = field.showIf.value;
+    if (field.showIf.operator === 'equals') return actual === expected;
+    if (field.showIf.operator === 'notEquals') return actual !== expected;
+    return Array.isArray(actual) ? actual.includes(expected) : String(actual || '').includes(String(expected));
+  });
+  const completed = visibleFields.filter((field) => {
+    const value = responses[field.name];
+    return value !== undefined && value !== null && value !== '';
+  }).length;
+  return visibleFields.length ? Math.round((completed / visibleFields.length) * 100) : 0;
+}
+
+module.exports = { validateAgainstSchema, validateResponses, calculateProgress };

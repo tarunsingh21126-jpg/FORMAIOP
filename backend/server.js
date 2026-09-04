@@ -6,6 +6,7 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const formRoutes = require('./routes/formRoutes');
 const aiRoutes = require('./routes/aiRoutes');
+const applicationRoutes = require('./routes/applicationRoutes');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -22,7 +23,9 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/forms', formRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/applications', applicationRoutes);
 
+app.use(notFoundHandler);
 app.use(errorHandler);
 
 async function start() {
@@ -38,6 +41,8 @@ async function start() {
   }
 }
 
-start();
+if (require.main === module) {
+  start();
+}
 
 module.exports = app;
