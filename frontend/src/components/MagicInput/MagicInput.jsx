@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { extractFromText } from '../../services/aiService';
 
+const MAX_TEXT_LENGTH = 10000;
+
 /**
  * Free-text -> AI extraction UI. On success, calls onExtracted(data) so the
  * parent can push values into DynamicForm via setValue(). A failure here
@@ -10,7 +12,6 @@ export default function MagicInput({ formId, onExtracted }) {
   const [text, setText] = useState('');
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
   const [message, setMessage] = useState('');
-  const MAX_TEXT_LENGTH = 10000;
 
   const handleExtract = async () => {
     if (!text.trim()) return;
@@ -20,12 +21,20 @@ export default function MagicInput({ formId, onExtracted }) {
 
     try {
       const result = await extractFromText(formId, text);
+
+      if (!result?.data || typeof result.data !== 'object') {
+        throw new Error('Invalid extraction response');
+      }
+
       setStatus('success');
       setMessage('Information extracted successfully');
       onExtracted(result.data);
     } catch (err) {
+      console.error('AI extraction failed:', err);
       setStatus('error');
-      setMessage('Unable to extract information. Please fill the form manually.');
+      setMessage(
+        'Unable to extract information. Please fill the form manually.'
+      );
     }
   };
 
@@ -34,6 +43,7 @@ export default function MagicInput({ formId, onExtracted }) {
       <label htmlFor="magic-textarea" className="magic-input-label">
         ✨ Describe what happened
       </label>
+
       <textarea
         id="magic-textarea"
         rows={4}
@@ -42,9 +52,11 @@ export default function MagicInput({ formId, onExtracted }) {
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
+
       <p className="magic-input-counter">
         {text.length} / {MAX_TEXT_LENGTH}
       </p>
+
       <div className="magic-input-actions">
         <button
           type="button"
@@ -52,12 +64,19 @@ export default function MagicInput({ formId, onExtracted }) {
           onClick={handleExtract}
           disabled={status === 'loading' || !text.trim()}
         >
-          {status === 'loading' ? 'Analyzing your description...' : '✨ Extract Information'}
+          {status === 'loading'
+            ? 'Analyzing your description...'
+            : '✨ Extract Information'}
         </button>
       </div>
 
-      {status === 'success' && <p className="magic-status magic-success">✓ {message}</p>}
-      {status === 'error' && <p className="magic-status magic-error">{message}</p>}
+      {status === 'success' && (
+        <p className="magic-status magic-success">✓ {message}</p>
+      )}
+
+      {status === 'error' && (
+        <p className="magic-status magic-error">{message}</p>
+      )}
     </div>
   );
 }
