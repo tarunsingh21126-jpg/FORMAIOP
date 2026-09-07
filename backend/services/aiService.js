@@ -1,86 +1,127 @@
-const { ChatOpenAI } = require('@langchain/openai');
+const { ChatGoogleGenerativeAI } = require('@langchain/google-genai');
 const { HumanMessage, SystemMessage } = require('@langchain/core/messages');
 
-/**
- * Returns a configured chat model instance based on .env settings.
- * To add a new provider: add a case here (and install its LangChain package).
- * Nothing outside this function needs to know which provider is active -
- * that's the whole point of keeping the provider configurable via .env.
- */
 function getChatModel() {
-  const provider = (process.env.LLM_PROVIDER || 'openai').toLowerCase();
   const apiKey = process.env.LLM_API_KEY;
-  const modelName = process.env.LLM_MODEL || 'gpt-4o-mini';
+  const modelName = process.env.LLM_MODEL || 'gemini-2.5-flash';
 
   if (!apiKey) {
     throw new Error('LLM_API_KEY is not set in .env');
   }
 
-  switch (provider) {
-    case 'openai':
-      return new ChatOpenAI({
-        apiKey,
-        model: modelName,
-        temperature: 0
-      });
-    // Add additional providers here, e.g.:
-    // case 'anthropic': return new ChatAnthropic({ apiKey, model: modelName });
-    default:
-      throw new Error(`Unsupported LLM_PROVIDER: ${provider}`);
-  }
+  return new ChatGoogleGenerativeAI({
+    apiKey,
+    model: modelName,
+    temperature: 0
+  });
 }
-
-/**
- * Builds a strict extraction prompt using ONLY the fields defined in the form
- * schema. The LLM is never told about, and can never return, any field
- * outside this list - that's what makes extraction "schema-aware".
- */
 function buildExtractionPrompt(formSchema, userText) {
   const fieldDescriptions = formSchema.fields.map((f) => {
-    const optionsNote = f.options && f.options.length ? ` (allowed values: ${f.options.join(', ')})` : '';
-    return `- "${f.name}" (${f.type})${optionsNote}: ${f.label}`;
+    let description = `- "${f.name}" (${f.type}): ${f.label}`;
+
+    if (f.options && f.options.length) {
+      description += `
+  EXACT allowed values: ${f.options.map((option) => `"${option}"`).join(', ')}
+  IMPORTANT: If selecting this field, return EXACTLY one of these values. Do not change capitalization, spacing, underscores, or wording.`;
+    }
+
+    return description;
   });
 
   const systemPrompt = `You are a strict data extraction engine for a form called "${formSchema.title}".
 
-You will be given a free-text description written by a user. Extract ONLY the following fields, using EXACTLY these field names as JSON keys:
+Extract information from the user's description and return ONLY a single flat JSON object.
 
+FORM FIELDS:
 ${fieldDescriptions.join('\n')}
 
-Rules:
-1. Return ONLY valid JSON. No preamble, no explanation, no markdown code fences.
-2. Use ONLY the field names listed above as keys. Never invent new keys.
-3. Never invent or guess a value that is not clearly stated or strongly implied in the text.
-4. If a field's value cannot be determined from the text, either omit the key or set it to null.
-5. For fields with "allowed values", only use one of the listed allowed values, or null.
-6. For "checkbox" type fields, return a boolean (true/false).
-7. For "number" type fields, return a number, not a string.
-8. Output a single flat JSON object and nothing else.`;
+STRICT RULES:
 
-  return [new SystemMessage(systemPrompt), new HumanMessage(userText)];
+1. Return ONLY valid JSON. No explanation, markdown, or code fences.
+
+2. Use ONLY the exact field names listed above.
+
+3. Never invent information.
+
+4. If information is not clearly present, omit the field or use null.
+
+5. SELECT/RADIO FIELDS:
+   You MUST return the exact allowed option value.
+   Do NOT return the human-readable label if it differs from the allowed value.
+   Do NOT capitalize or modify the value.
+
+6. For example, if the allowed values are:
+   ["collision", "animal_collision", "theft", "other"]
+
+   and the user says:
+   "I collided with another car"
+
+   return:
+   {"incidentType":"collision"}
+
+   NOT:
+   {"incidentType":"Collision"}
+
+   NOT:
+   {"incidentType":"car collision"}
+
+   NOT:
+   {"incidentType":"vehicle collision"}
+
+7. For checkbox fields, return true or false.
+
+8. For number fields, return a JSON number.
+
+9. For date fields, return the date in YYYY-MM-DD format whenever the date can be determined.
+
+10. Only extract information actually supported by the user's description.
+
+11. Return one flat JSON object and nothing else.`;
+
+  return [
+    new SystemMessage(systemPrompt),
+    new HumanMessage(userText)
+  ];
 }
-
-/**
- * Runs extraction: user text + form schema -> raw JSON object (unvalidated).
- * Schema validation of the result happens separately, in utils/validateAgainstSchema.
- */
 async function extractStructuredData(formSchema, userText) {
   const model = getChatModel();
-  const messages = buildExtractionPrompt(formSchema, userText);
+
+  const messages = buildExtractionPrompt(
+    formSchema,
+    userText
+  );
 
   const response = await model.invoke(messages);
-  const rawText = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
+
+  const rawText =
+    typeof response.content === 'string'
+      ? response.content
+      : JSON.stringify(response.content);
 
   return parseJsonSafely(rawText);
 }
 
-// LLMs sometimes wrap JSON in markdown fences despite instructions not to - strip those first.
 function parseJsonSafely(text) {
-  const cleaned=String(text||'').replace(/```(?:json)?/gi,'').replace(/```/g,'').trim();
-  try { return JSON.parse(cleaned); } catch {}
-  const match=cleaned.match(/\{[\s\S]*\}/);
-  if(match){ try { return JSON.parse(match[0]); } catch {} }
+  const cleaned = String(text || '')
+    .replace(/```(?:json)?/gi, '')
+    .replace(/```/g, '')
+    .trim();
+
+  try {
+    return JSON.parse(cleaned);
+  } catch {}
+
+  const match = cleaned.match(/\{[\s\S]*\}/);
+
+  if (match) {
+    try {
+      return JSON.parse(match[0]);
+    } catch {}
+  }
+
   throw new Error('LLM did not return valid JSON');
 }
 
-module.exports = { extractStructuredData };
+module.exports = {
+  extractStructuredData
+};
