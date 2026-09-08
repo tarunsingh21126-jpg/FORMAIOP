@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { extractFromText } from '../../services/aiService';
 
 const MAX_TEXT_LENGTH = 10000;
@@ -17,7 +17,6 @@ export default function MagicInput({ formId, onExtracted }) {
     const trimmedText = text.trim();
 
     if (!trimmedText || status === 'loading') return;
-
     setStatus('loading');
     setMessage('');
 

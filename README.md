@@ -1,6 +1,3 @@
-
-
-````markdown
 # 🚀 Forma AI
 
 ## AI-Augmented Dynamic Form Engine
@@ -31,32 +28,32 @@
 
 ## 📑 Table of Contents
 
-- [🌐 About](#-about)
-- [❗ Problem Statement](#-problem-statement)
-- [💡 Solution](#-solution)
-- [🎯 Objectives](#-objectives)
-- [✨ Key Features](#-key-features)
-- [🤖 AI-Powered Natural Language Extraction](#-ai-powered-natural-language-extraction)
-- [📋 Dynamic Form Engine](#-dynamic-form-engine)
-- [🔀 Conditional Branching](#-conditional-branching)
-- [🧠 Schema-Driven Architecture](#-schema-driven-architecture)
-- [✅ Validation](#-validation)
-- [💾 Data Persistence](#-data-persistence)
-- [🔄 How It Works](#-how-it-works)
-- [🏗️ System Architecture](#️-system-architecture)
-- [🧰 Tech Stack](#-tech-stack)
-- [📡 API Architecture](#-api-architecture)
-- [📸 Project Screenshots](#-project-screenshots)
-- [📂 Project Structure](#-project-structure)
-- [🚀 Installation](#-installation)
-- [🧪 Testing](#-testing)
-- [🔐 Security](#-security)
-- [📈 Development Journey](#-development-journey)
-- [🏆 Project Highlights](#-project-highlights)
-- [🌟 Advantages](#-advantages)
-- [🔮 Future Enhancements](#-future-enhancements)
-- [👥 Team Members](#-team-members)
-- [📜 License](#-license)
+* [🌐 About](#-about)
+* [❗ Problem Statement](#-problem-statement)
+* [💡 Solution](#-solution)
+* [🎯 Objectives](#-objectives)
+* [✨ Key Features](#-key-features)
+* [🤖 AI-Powered Natural Language Extraction](#-ai-powered-natural-language-extraction)
+* [📋 Dynamic Form Engine](#-dynamic-form-engine)
+* [🔀 Conditional Branching](#-conditional-branching)
+* [🧠 Schema-Driven Architecture](#-schema-driven-architecture)
+* [✅ Validation](#-validation)
+* [💾 Data Persistence](#-data-persistence)
+* [🔄 How It Works](#-how-it-works)
+* [🏗️ System Architecture](#️-system-architecture)
+* [🧰 Tech Stack](#-tech-stack)
+* [📡 API Architecture](#-api-architecture)
+* [📸 Project Screenshots](#-project-screenshots)
+* [📂 Project Structure](#-project-structure)
+* [🚀 Installation](#-installation)
+* [🧪 Testing](#-testing)
+* [🔐 Security](#-security)
+* [📈 Development Journey](#-development-journey)
+* [🏆 Project Highlights](#-project-highlights)
+* [🌟 Advantages](#-advantages)
+* [🔮 Future Enhancements](#-future-enhancements)
+* [👥 Team Members](#-team-members)
+* [📜 License](#-license)
 
 ---
 
@@ -80,7 +77,7 @@ The AI engine processes the description and extracts structured information:
   "vehicle": "Honda",
   "damage": "windshield"
 }
-````
+```
 
 The extracted information is then mapped to the appropriate form fields. The form engine evaluates business rules and displays only the questions relevant to the user's situation.
 
@@ -1328,12 +1325,10 @@ Forma AI is developed as a collaborative academic project.
 | # | Team Member       |
 | - | ----------------- |
 | 1 | **Anuvardhini T** |
-| 2 | **Tarun Singh  ** |
+| 2 | **Tarun Singh**   |
 | 3 | **Shreya Kumari** |
-| 4 | **Devi Akshya  ** |
-| 5 | **Aman Panda   ** |
-
-
+| 4 | **Devi Akshya**   |
+| 5 | **Aman Panda**    |
 
 ---
 
@@ -1354,4 +1349,3 @@ This project is developed for **educational, academic, and demonstration purpose
 <p align="center">
   <em>Transforming complex forms into intelligent, adaptive experiences.</em>
 </p>
-```

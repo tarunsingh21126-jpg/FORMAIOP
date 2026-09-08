@@ -1,8 +1,1 @@
-const express = require('express');
-const { extractFromText } = require('../controllers/aiController');
-
-const router = express.Router();
-
-router.post('/extract', extractFromText);
-
-module.exports = router;
+const express=require('express');const {extractFromText}=require('../controllers/aiController');const {requireAuth}=require('../middleware/auth');const router=express.Router();router.use(requireAuth);router.post('/extract',extractFromText);module.exports=router;

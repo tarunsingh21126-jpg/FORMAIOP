@@ -155,8 +155,23 @@ const insuranceClaimForm = {
       type: 'textarea',
       required: false
     }
+  ],
+  sections: [
+    { title: 'Incident Information', description: 'Tell us when and where it happened.', order: 1, fields: [] },
+    { title: 'Vehicle Information', description: 'Identify the vehicle involved.', order: 2, fields: [] },
+    { title: 'Damage Information', description: 'Describe the damage and severity.', order: 3, fields: [] },
+    { title: 'People / Injuries', description: 'Tell us about injuries and other people involved.', order: 4, fields: [] },
+    { title: 'Police / Witnesses', description: 'Add reports and witness information.', order: 5, fields: [] },
+    { title: 'Review', description: 'Review everything before submitting.', order: 6, fields: [] }
   ]
 };
+
+insuranceClaimForm.sections[0].fields = insuranceClaimForm.fields.slice(0,3);
+insuranceClaimForm.sections[1].fields = insuranceClaimForm.fields.slice(3,5);
+insuranceClaimForm.sections[2].fields = insuranceClaimForm.fields.slice(11,13);
+insuranceClaimForm.sections[3].fields = insuranceClaimForm.fields.slice(5,11);
+insuranceClaimForm.sections[4].fields = insuranceClaimForm.fields.slice(13,18);
+insuranceClaimForm.sections[5].fields = insuranceClaimForm.fields.slice(18);
 
 const seed = async () => {
   await connectDB();

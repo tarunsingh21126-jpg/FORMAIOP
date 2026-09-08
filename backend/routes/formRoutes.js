@@ -1,11 +1,1 @@
-const express = require('express');
-const { getForm, createForm, updateForm, deleteForm } = require('../controllers/formController');
-
-const router = express.Router();
-
-router.get('/:formId', getForm);
-router.post('/', createForm);
-router.put('/:formId', updateForm);
-router.delete('/:formId', deleteForm);
-
-module.exports = router;
+const express=require('express');const c=require('../controllers/formController');const {requireAuth}=require('../middleware/auth');const router=express.Router();router.use(requireAuth);router.get('/',c.list);router.get('/:formId',c.getForm);router.post('/',c.createForm);router.put('/:formId',c.updateForm);router.post('/:formId/duplicate',c.duplicateForm);router.delete('/:formId',c.deleteForm);module.exports=router;
