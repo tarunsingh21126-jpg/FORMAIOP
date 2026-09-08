@@ -1,2 +1,83 @@
-import {useState} from 'react';import {extractFromText} from '../../services/aiService';import {Button,Card} from '../UI';
-export default function MagicInput({formId,onExtracted}){const[text,setText]=useState('');const[status,setStatus]=useState('idle');const[msg,setMsg]=useState('');const MAX=10000;async function extract(){if(!text.trim())return;setStatus('loading');setMsg('');try{const r=await extractFromText(formId,text);onExtracted(r.data||{});setStatus('success');setMsg('Information extracted successfully');}catch{setStatus('error');setMsg('AI extraction is temporarily unavailable. You can continue manually.');}}return <Card className="magic-card"><div className="magic-head"><div><span className="eyebrow">AI MAGIC INPUT</span><h2>Describe what happened</h2><p>Explain the situation naturally. Forma AI maps your words to the fields in this form.</p></div><span className="ai-orb">✦</span></div><textarea value={text} onChange={e=>setText(e.target.value)} maxLength={MAX} rows={5} placeholder="I hit a deer on I-95 yesterday in my Honda Civic. The windshield shattered and nobody was injured."/><div className="magic-footer"><span>{text.length.toLocaleString()} / {MAX.toLocaleString()}</span><Button type="button" onClick={extract} disabled={!text.trim()||status==='loading'}>{status==='loading'?'◌ Analyzing your description...':'✦ Extract Information'}</Button></div>{status==='success'&&<div className="status success">✓ {msg}</div>}{status==='error'&&<div className="status error">{msg}</div>}</Card>}
+﻿import { useState } from 'react';
+import { extractFromText } from '../../services/aiService';
+
+const MAX_TEXT_LENGTH = 10000;
+
+/**
+ * Free-text -> AI extraction UI. On success, calls onExtracted(data) so the
+ * parent can push values into DynamicForm via setValue(). A failure here
+ * never blocks the manual form below it.
+ */
+export default function MagicInput({ formId, onExtracted }) {
+  const [text, setText] = useState('');
+  const [status, setStatus] = useState('idle'); // idle | loading | success | error
+  const [message, setMessage] = useState('');
+
+  const handleExtract = async () => {
+    const trimmedText = text.trim();
+
+    if (!trimmedText || status === 'loading') return;
+    setStatus('loading');
+    setMessage('');
+
+    try {
+      const result = await extractFromText(formId, trimmedText);
+
+      if (!result?.data || typeof result.data !== 'object') {
+        throw new Error('Invalid extraction response');
+      }
+
+      setStatus('success');
+      setMessage('Information extracted successfully');
+      onExtracted(result.data);
+    } catch (err) {
+      console.error('AI extraction failed:', err);
+      setStatus('error');
+      setMessage(
+        'Unable to extract information. Please fill the form manually.'
+      );
+    }
+  };
+
+  return (
+    <div className="magic-input">
+      <label htmlFor="magic-textarea" className="magic-input-label">
+        ✨ Describe what happened
+      </label>
+
+      <textarea
+        id="magic-textarea"
+        rows={4}
+        maxLength={MAX_TEXT_LENGTH}
+        placeholder="e.g. I hit a deer on I-95 yesterday in my Honda. The windshield shattered."
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
+
+      <p className="magic-input-counter">
+        {text.length} / {MAX_TEXT_LENGTH}
+      </p>
+
+      <div className="magic-input-actions">
+        <button
+          type="button"
+          className="extract-btn"
+          onClick={handleExtract}
+          disabled={status === 'loading' || !text.trim()}
+        >
+          {status === 'loading'
+            ? 'Analyzing your description...'
+            : '✨ Extract Information'}
+        </button>
+      </div>
+
+      {status === 'success' && (
+        <p className="magic-status magic-success">✓ {message}</p>
+      )}
+
+      {status === 'error' && (
+        <p className="magic-status magic-error">{message}</p>
+      )}
+    </div>
+  );
+}
