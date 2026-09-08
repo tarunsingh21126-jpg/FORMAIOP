@@ -14,13 +14,15 @@ export default function MagicInput({ formId, onExtracted }) {
   const [message, setMessage] = useState('');
 
   const handleExtract = async () => {
-    if (!text.trim()) return;
+    const trimmedText = text.trim();
+
+    if (!trimmedText || status === 'loading') return;
 
     setStatus('loading');
     setMessage('');
 
     try {
-      const result = await extractFromText(formId, text);
+      const result = await extractFromText(formId, trimmedText);
 
       if (!result?.data || typeof result.data !== 'object') {
         throw new Error('Invalid extraction response');
