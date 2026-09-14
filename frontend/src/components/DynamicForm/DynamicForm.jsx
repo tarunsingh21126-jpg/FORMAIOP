@@ -111,7 +111,9 @@ const DynamicForm = forwardRef(function DynamicForm(
             <button
               key={s.title}
               type="button"
-              className={i === step ? 'current' : i < step ? 'done' : ''}
+              className={
+                i === step ? 'current' : i < step ? 'done' : ''
+              }
               onClick={() => i <= step && setStep(i)}
             >
               <span>{i < step ? '✓' : i + 1}</span>
@@ -136,7 +138,10 @@ const DynamicForm = forwardRef(function DynamicForm(
               </div>
 
               <span className="progress-percent">
-                {Math.round(((step + 1) / sections.length) * 100)}%
+                {Math.round(
+                  ((step + 1) / sections.length) * 100
+                )}
+                %
               </span>
             </div>
 
@@ -200,8 +205,11 @@ const DynamicForm = forwardRef(function DynamicForm(
                     type="button"
                     className="btn btn-primary"
                     onClick={finish}
+                    disabled={isSubmitting}
                   >
-                    Review & Submit →
+                    {isSubmitting
+                      ? 'Submitting...'
+                      : 'Review & Submit →'}
                   </button>
                 )}
               </div>
