@@ -114,6 +114,7 @@ const DynamicForm = forwardRef(function DynamicForm(
               className={
                 i === step ? 'current' : i < step ? 'done' : ''
               }
+              aria-current={i === step ? 'step' : undefined}
               onClick={() => i <= step && setStep(i)}
             >
               <span>{i < step ? '✓' : i + 1}</span>
