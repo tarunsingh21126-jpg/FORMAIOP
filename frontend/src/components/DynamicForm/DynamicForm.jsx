@@ -8,7 +8,7 @@ import {
 import { useForm } from 'react-hook-form';
 import FormField from '../FormField/FormField';
 import { useConditionalFields } from '../../hooks/useConditionalFields';
-import { buildValidationRules } from '../TextField/TextField';
+
 
 const DynamicForm = forwardRef(function DynamicForm(
   {
@@ -74,7 +74,7 @@ const DynamicForm = forwardRef(function DynamicForm(
     if (onValuesChange) onValuesChange(values);
   }, [JSON.stringify(values)]);
 
-  const visibleAll = useConditionalFields(allFields, values);
+
   const sectionFields = sections[step]?.fields || [];
   const visible = useConditionalFields(sectionFields, values);
 
